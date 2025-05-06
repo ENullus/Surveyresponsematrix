@@ -1,0 +1,1062 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Climate Concerns Fractal Matrix</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background-color: #0a0a14;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
+        Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      color: #ffffff;
+    }
+    
+    .loading {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 1.5rem;
+      background-color: #0a0a14;
+      z-index: 100;
+    }
+    
+    .loading-status {
+      margin-top: 1rem;
+      font-size: 1rem;
+      color: #aaa;
+    }
+    
+    canvas {
+      position: absolute;
+      inset: 0;
+    }
+    
+    .quote-display {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      max-width: 700px;
+      width: 80%;
+      padding: 2rem;
+      border-radius: 0.75rem;
+      background-color: rgba(0, 0, 0, 0.7);
+      text-align: center;
+      transition: opacity 0.7s ease-in-out, transform 0.5s ease-in-out;
+      z-index: 10;
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(5px);
+    }
+    
+    .quote-text {
+      font-size: 1.5rem;
+      margin: 0 0 1rem 0;
+      line-height: 1.5;
+      font-weight: 300;
+    }
+    
+    .quote-category {
+      font-size: 0.875rem;
+      opacity: 0.7;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      font-weight: 600;
+    }
+    
+    .legend {
+      position: absolute;
+      bottom: 1rem;
+      left: 1rem;
+      background-color: rgba(10, 10, 20, 0.8);
+      padding: 1rem;
+      border-radius: 0.5rem;
+      font-size: 0.875rem;
+      z-index: 5;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(5px);
+    }
+    
+    .legend h3 {
+      color: white;
+      font-weight: bold;
+      margin-top: 0;
+      margin-bottom: 0.5rem;
+    }
+    
+    .legend-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+    
+    .legend-color {
+      width: 1rem;
+      height: 1rem;
+      border-radius: 9999px;
+      margin-right: 0.5rem;
+      box-shadow: 0 0 8px currentColor;
+    }
+    
+    .legend-label {
+      color: white;
+    }
+    
+    .controls {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      background-color: rgba(10, 10, 20, 0.8);
+      padding: 1rem;
+      border-radius: 0.5rem;
+      font-size: 0.875rem;
+      z-index: 5;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(5px);
+    }
+    
+    .control-btn {
+      background-color: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 0.25rem;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    
+    .control-btn:hover {
+      background-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .control-slider {
+      width: 100%;
+      margin: 0.5rem 0;
+    }
+    
+    .control-label {
+      display: block;
+      margin-bottom: 0.25rem;
+      color: #aaa;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+    }
+    
+    .stats {
+      position: absolute;
+      top: 1rem;
+      left: 1rem;
+      background-color: rgba(10, 10, 20, 0.8);
+      padding: 1rem;
+      border-radius: 0.5rem;
+      font-size: 0.875rem;
+      z-index: 5;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(5px);
+    }
+    
+    .stats h3 {
+      color: white;
+      font-weight: bold;
+      margin-top: 0;
+      margin-bottom: 0.5rem;
+    }
+    
+    .stat-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.25rem;
+    }
+    
+    .stat-label {
+      color: white;
+      margin-right: 1rem;
+    }
+    
+    .stat-value {
+      color: white;
+      font-weight: bold;
+    }
+    
+    .stat-bar-container {
+      height: 6px;
+      width: 100%;
+      background-color: rgba(255, 255, 255, 0.1);
+      border-radius: 3px;
+      margin-top: 2px;
+    }
+    
+    .stat-bar {
+      height: 100%;
+      border-radius: 3px;
+      box-shadow: 0 0 5px currentColor;
+    }
+    
+    #performance-toggle {
+      position: absolute;
+      bottom: 10px;
+      right: 10px;
+      background-color: rgba(255, 255, 255, 0.1);
+      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      padding: 5px 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      z-index: 100;
+    }
+  </style>
+</head>
+<body>
+  <div id="loading" class="loading">
+    <div>Loading Fractal Matrix Visualization...</div>
+    <div id="loading-status" class="loading-status">Initializing...</div>
+  </div>
+  <canvas id="canvas"></canvas>
+  <div id="quote-display" class="quote-display" style="opacity: 0;">
+    <p id="quote-text" class="quote-text"></p>
+    <div id="quote-category" class="quote-category"></div>
+  </div>
+  
+  <div class="stats">
+    <h3>Concern Categories</h3>
+    <div id="stats-content"></div>
+  </div>
+  
+  <div class="legend">
+    <h3>Climate Concerns Fractal</h3>
+    <div class="legend-item">
+      <div class="legend-color" style="background-color: #AB2377;"></div>
+      <span class="legend-label">Social Programs</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-color" style="background-color: #19455E;"></div>
+      <span class="legend-label">Climate Issues</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-color" style="background-color: #5E69FF;"></div>
+      <span class="legend-label">Political Concerns</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-color" style="background-color: #F2B91C;"></div>
+      <span class="legend-label">Economic Worries</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-color" style="background-color: #F35822;"></div>
+      <span class="legend-label">Health & Safety</span>
+    </div>
+  </div>
+  
+  <div class="controls">
+    <button id="pause-btn" class="control-btn">Pause</button>
+    <button id="filter-social" class="control-btn">Social</button>
+    <button id="filter-climate" class="control-btn">Climate</button>
+    <button id="filter-political" class="control-btn">Political</button>
+    <button id="filter-economic" class="control-btn">Economic</button>
+    <button id="filter-health" class="control-btn">Health</button>
+    <button id="filter-all" class="control-btn">All</button>
+    <label class="control-label">Complexity</label>
+    <input type="range" id="complexity-slider" min="1" max="5" value="2" step="0.5" class="control-slider">
+    <label class="control-label">Speed</label>
+    <input type="range" id="speed-slider" min="0.2" max="2" value="1" step="0.1" class="control-slider">
+  </div>
+  
+  <button id="performance-toggle" title="Toggle performance mode">Performance Mode: Normal</button>
+
+  <script>
+    // Configuration
+    const colorScheme = {
+      background: '#0a0a14',
+      categories: {
+        social: '#AB2377',    // Hibiscus
+        climate: '#19455E',   // Biscay
+        political: '#5E69FF', // Flickering Sea
+        economic: '#F2B91C',  // Sun Song
+        health: '#F35822'     // Flamingo
+      }
+    };
+    
+    // Performance tracking
+    const performance = {
+      mode: 'normal', // 'normal', 'reduced', 'minimal'
+      toggle: function() {
+        if (this.mode === 'normal') {
+          this.mode = 'reduced';
+          document.getElementById('performance-toggle').textContent = 'Performance Mode: Reduced';
+          matrixConfig.columnCount = Math.floor(matrixConfig.columnCount * 0.6);
+          createNodes();
+        } else if (this.mode === 'reduced') {
+          this.mode = 'minimal';
+          document.getElementById('performance-toggle').textContent = 'Performance Mode: Minimal';
+          matrixConfig.columnCount = Math.floor(matrixConfig.columnCount * 0.5);
+          createNodes();
+        } else {
+          this.mode = 'normal';
+          document.getElementById('performance-toggle').textContent = 'Performance Mode: Normal';
+          matrixConfig.columnCount = Math.floor(matrixConfig.columnCount * 3.3);
+          createNodes();
+        }
+      }
+    };
+    
+    // Matrix configuration
+    const matrixConfig = {
+      columnCount: 30, // Start with a lower number for better performance
+      minLength: 8,
+      maxLength: 20,
+      isPaused: false,
+      activeCategory: 'all'
+    };
+    
+    // App state
+    let textData = [];
+    let keyTerms = {};
+    let termCounts = {};
+    let currentQuote = { text: '', category: '', id: null };
+    let nodes = [];
+    let quoteTimer = null;
+    let categoryQuotes = {};
+    let isPaused = false;
+    let activeCategory = 'all';
+    let complexity = 2; // Start with lower complexity
+    let speed = 1;
+    let time = 0;
+    let canvas, ctx, width, height;
+    let animationFrameId;
+    let isInitialized = false;
+    
+    // DOM elements
+    const loadingEl = document.getElementById('loading');
+    const loadingStatusEl = document.getElementById('loading-status');
+    const quoteDisplayEl = document.getElementById('quote-display');
+    const quoteTextEl = document.getElementById('quote-text');
+    const quoteCategoryEl = document.getElementById('quote-category');
+    const statsContentEl = document.getElementById('stats-content');
+    const pauseBtn = document.getElementById('pause-btn');
+    const complexitySlider = document.getElementById('complexity-slider');
+    const speedSlider = document.getElementById('speed-slider');
+    const performanceToggle = document.getElementById('performance-toggle');
+    const filterButtons = {
+      social: document.getElementById('filter-social'),
+      climate: document.getElementById('filter-climate'),
+      political: document.getElementById('filter-political'),
+      economic: document.getElementById('filter-economic'),
+      health: document.getElementById('filter-health'),
+      all: document.getElementById('filter-all')
+    };
+    
+    // Sample fallback data
+    const sampleData = [
+      "Social security, medicare cuts, stock market instability",
+      "Cuts to healthcare, science and research. Voter rights, and taxes",
+      "The climate changes causing no snow and we need the snow",
+      "Flooding and heat!!",
+      "Democracy in Crisis",
+      "My well being, mentally & physically",
+      "Economy, prices, the safety and well-being of my neighbors",
+      "homelessness, my health is failing",
+      "Medicaid social security medicare democracy etc"
+    ];
+    
+    // Helper functions for text analysis
+    function analyzeText(data) {
+      updateLoadingStatus("Analyzing text data...");
+      
+      const terms = {
+        social: ['social security', 'medicare', 'medicaid', 'snap', 'cuts', 'healthcare'],
+        climate: ['climate', 'flood', 'heat', 'warming', 'hurricane', 'temperature', 'weather', 'drought'],
+        political: ['trump', 'democracy', 'republican', 'rights', 'vote', 'election'],
+        economic: ['economy', 'cost', 'prices', 'tax', 'billionaire', 'market', '401k'],
+        health: ['health', 'air', 'pollution', 'water', 'safety']
+      };
+      
+      const termCounts = {
+        social: 0,
+        climate: 0,
+        political: 0,
+        economic: 0,
+        health: 0
+      };
+      
+      // Count occurrences of each term type
+      try {
+        data.forEach(line => {
+          const lowerLine = line.toLowerCase();
+          
+          Object.keys(terms).forEach(category => {
+            terms[category].forEach(term => {
+              if (lowerLine.includes(term)) {
+                termCounts[category]++;
+              }
+            });
+          });
+        });
+        
+        return termCounts;
+      } catch (error) {
+        console.error("Error analyzing text:", error);
+        // Return default counts
+        return {
+          social: 10,
+          climate: 10,
+          political: 10,
+          economic: 10,
+          health: 10
+        };
+      }
+    }
+    
+    function categorizeQuotes(data) {
+      updateLoadingStatus("Categorizing quotes...");
+      
+      try {
+        const terms = {
+          social: ['social security', 'medicare', 'medicaid', 'snap', 'cuts', 'healthcare'],
+          climate: ['climate', 'flood', 'heat', 'warming', 'hurricane', 'temperature', 'weather', 'drought'],
+          political: ['trump', 'democracy', 'republican', 'rights', 'vote', 'election'],
+          economic: ['economy', 'cost', 'prices', 'tax', 'billionaire', 'market', '401k'],
+          health: ['health', 'air', 'pollution', 'water', 'safety']
+        };
+        
+        const categorizedQuotes = {
+          social: [],
+          climate: [],
+          political: [],
+          economic: [],
+          health: [],
+          all: []
+        };
+        
+        data.forEach((line, index) => {
+          if (line.length < 15 || line.length > 200) return; // Filter out very short or long lines
+          
+          const lowerLine = line.toLowerCase();
+          let primaryCategory = null;
+          let maxMatches = 0;
+          
+          // Find the category with the most matches
+          Object.keys(terms).forEach(category => {
+            let matches = 0;
+            terms[category].forEach(term => {
+              if (lowerLine.includes(term)) matches++;
+            });
+            
+            if (matches > maxMatches) {
+              maxMatches = matches;
+              primaryCategory = category;
+            }
+          });
+          
+          if (primaryCategory && maxMatches > 0) {
+            const quoteObj = {
+              text: line,
+              category: primaryCategory,
+              id: index
+            };
+            
+            categorizedQuotes[primaryCategory].push(quoteObj);
+            categorizedQuotes.all.push(quoteObj);
+          }
+        });
+        
+        // Ensure all categories have at least one quote for stability
+        Object.keys(categorizedQuotes).forEach(category => {
+          if (category !== 'all' && categorizedQuotes[category].length === 0) {
+            categorizedQuotes[category].push({
+              text: `Example ${category} concern`,
+              category: category,
+              id: -1
+            });
+          }
+        });
+        
+        return categorizedQuotes;
+      } catch (error) {
+        console.error("Error categorizing quotes:", error);
+        // Return default quotes
+        const defaultQuotes = {social: [], climate: [], political: [], economic: [], health: [], all: []};
+        
+        sampleData.forEach((text, index) => {
+          const category = ['social', 'climate', 'political', 'economic', 'health'][index % 5];
+          const quote = {text, category, id: index};
+          defaultQuotes[category].push(quote);
+          defaultQuotes.all.push(quote);
+        });
+        
+        return defaultQuotes;
+      }
+    }
+    
+    // Fractal matrix visualization
+    function setupCanvas() {
+      updateLoadingStatus("Setting up visualization canvas...");
+      
+      try {
+        canvas = document.getElementById('canvas');
+        if (!canvas) {
+          throw new Error("Canvas element not found");
+        }
+        
+        ctx = canvas.getContext('2d');
+        if (!ctx) {
+          throw new Error("Cannot get 2D context from canvas");
+        }
+        
+        // Set canvas dimensions
+        width = window.innerWidth;
+        height = window.innerHeight;
+        canvas.width = width;
+        canvas.height = height;
+        
+        // Create nodes
+        createNodes();
+        
+        return true;
+      } catch (error) {
+        console.error("Canvas setup error:", error);
+        return false;
+      }
+    }
+    
+    function createNodes() {
+      updateLoadingStatus("Creating fractal nodes...");
+      
+      try {
+        nodes = [];
+        const totalCount = Math.floor(complexity * matrixConfig.columnCount); // Complexity determines number of nodes
+        
+        // Create a proportional number of nodes for each category
+        const categories = Object.keys(colorScheme.categories);
+        const categoryWeights = {};
+        
+        // Calculate weights based on term counts
+        let totalTerms = 0;
+        categories.forEach(category => {
+          totalTerms += termCounts[category] || 1;
+        });
+        
+        categories.forEach(category => {
+          const weight = termCounts[category] ? termCounts[category] / totalTerms : 0.2;
+          categoryWeights[category] = Math.max(0.05, weight); // Ensure at least 5% representation
+        });
+        
+        // Create nodes based on weights
+        categories.forEach(category => {
+          const count = Math.round(totalCount * categoryWeights[category]);
+          
+          for (let i = 0; i < count; i++) {
+            nodes.push(createNode(category));
+          }
+        });
+        
+        console.log(`Created ${nodes.length} nodes based on complexity ${complexity}`);
+      } catch (error) {
+        console.error("Error creating nodes:", error);
+        // Create some default nodes if there was an error
+        for (let i = 0; i < 20; i++) {
+          nodes.push(createNode(Object.keys(colorScheme.categories)[i % 5]));
+        }
+      }
+    }
+    
+    function createNode(category) {
+      return {
+        x: Math.random() * width,
+        y: Math.random() * height,
+        z: Math.random() * 200 - 100, // Z dimension for 3D effect
+        radius: Math.random() * 5 + 3,
+        category: category,
+        color: colorScheme.categories[category],
+        speed: {
+          x: (Math.random() - 0.5) * 2,
+          y: (Math.random() - 0.5) * 2,
+          z: (Math.random() - 0.5) * 1
+        },
+        connections: [],
+        pulsePhase: Math.random() * Math.PI * 2 // Random starting phase for pulsing
+      };
+    }
+    
+    function updateNodes() {
+      if (isPaused) return;
+      
+      time += 0.02 * speed;
+      
+      // Update node positions with fractal-like motion
+      nodes.forEach(node => {
+        // Skip inactive categories
+        if (activeCategory !== 'all' && node.category !== activeCategory) return;
+        
+        // Update position with fractal movement pattern
+        node.x += Math.sin(time * 0.5 + node.y * 0.02) * node.speed.x * speed;
+        node.y += Math.cos(time * 0.5 + node.x * 0.02) * node.speed.y * speed;
+        node.z += Math.sin(time * 0.3) * node.speed.z * speed;
+        
+        // Update pulse phase
+        node.pulsePhase += 0.03 * speed;
+        if (node.pulsePhase > Math.PI * 2) node.pulsePhase -= Math.PI * 2;
+        
+        // Wrap around edges
+        if (node.x < 0) node.x = width;
+        if (node.x > width) node.x = 0;
+        if (node.y < 0) node.y = height;
+        if (node.y > height) node.y = 0;
+      });
+      
+      // Find connections between nodes
+      if (performance.mode !== 'minimal' || Math.random() < 0.3) { // Update connections less often in minimal mode
+        nodes.forEach(node => {
+          node.connections = [];
+          
+          // In minimal mode, connect to fewer nodes
+          const connectionLimit = performance.mode === 'minimal' ? 3 : 
+                                 performance.mode === 'reduced' ? 5 : 
+                                 nodes.length;
+          
+          let connectionsAdded = 0;
+          
+          for (let i = 0; i < nodes.length && connectionsAdded < connectionLimit; i++) {
+            const otherNode = nodes[i];
+            if (node === otherNode) continue;
+            if (activeCategory !== 'all' && (node.category !== activeCategory || otherNode.category !== activeCategory)) continue;
+            
+            const dx = node.x - otherNode.x;
+            const dy = node.y - otherNode.y;
+            const dz = node.z - otherNode.z;
+            const distance = Math.sqrt(dx * dx + dy * dy + Math.abs(dz));
+            
+            // Connect nodes that are close to each other
+            if (distance < 150) {
+              const strength = 1 - distance / 150;
+              node.connections.push({ node: otherNode, strength });
+              connectionsAdded++;
+            }
+          }
+        });
+      }
+    }
+    
+    function drawFractalMatrix() {
+      try {
+        // Clear canvas with semi-transparent background for trailing effect
+        ctx.fillStyle = `${colorScheme.background}30`;
+        ctx.fillRect(0, 0, width, height);
+        
+        // First, draw connections between nodes
+        nodes.forEach(node => {
+          if (activeCategory !== 'all' && node.category !== activeCategory) return;
+          
+          // Skip some connection drawing based on performance mode
+          const connectionLimit = performance.mode === 'minimal' ? 2 :
+                                 performance.mode === 'reduced' ? 4 : 
+                                 node.connections.length;
+          
+          for (let i = 0; i < Math.min(connectionLimit, node.connections.length); i++) {
+            const connection = node.connections[i];
+            const { node: connectedNode, strength } = connection;
+            
+            // Draw connection with gradient
+            const gradient = ctx.createLinearGradient(
+              node.x, node.y,
+              connectedNode.x, connectedNode.y
+            );
+            
+            gradient.addColorStop(0, `${node.color}${Math.floor(strength * 70).toString(16).padStart(2, '0')}`);
+            gradient.addColorStop(1, `${connectedNode.color}${Math.floor(strength * 70).toString(16).padStart(2, '0')}`);
+            
+            ctx.beginPath();
+            ctx.strokeStyle = gradient;
+            ctx.lineWidth = Math.min(strength * 2, 1.5); // Cap line width
+            ctx.moveTo(node.x, node.y);
+            ctx.lineTo(connectedNode.x, connectedNode.y);
+            ctx.stroke();
+          }
+        });
+        
+        // Then, draw the nodes
+        nodes.forEach(node => {
+          if (activeCategory !== 'all' && node.category !== activeCategory) return;
+          
+          // Calculate node size based on z-position and pulsing for 3D effect
+          const perspective = 1 + node.z / 500;
+          const pulseFactor = 0.3 * Math.sin(node.pulsePhase) + 1;
+          const radius = node.radius * perspective * pulseFactor;
+          
+          // Draw glow (skip in minimal performance mode)
+          if (performance.mode !== 'minimal') {
+            const gradient = ctx.createRadialGradient(
+              node.x, node.y, 0,
+              node.x, node.y, radius * 2.5
+            );
+            
+            gradient.addColorStop(0, `${node.color}50`);
+            gradient.addColorStop(1, `${node.color}00`);
+            
+            ctx.beginPath();
+            ctx.fillStyle = gradient;
+            ctx.arc(node.x, node.y, radius * 2.5, 0, Math.PI * 2);
+            ctx.fill();
+          }
+          
+          // Draw node
+          ctx.beginPath();
+          ctx.fillStyle = node.color;
+          ctx.arc(node.x, node.y, radius, 0, Math.PI * 2);
+          ctx.fill();
+        });
+        
+        // Draw occasional particle trails instead of binary digits
+        if (performance.mode === 'normal' && Math.random() < 0.1 * complexity) {
+          const x = Math.random() * width;
+          const y = Math.random() * height;
+          const category = Object.keys(colorScheme.categories)[Math.floor(Math.random() * Object.keys(colorScheme.categories).length)];
+          
+          if (activeCategory === 'all' || category === activeCategory) {
+            const radius = Math.random() * 2 + 1;
+            ctx.beginPath();
+            ctx.fillStyle = `${colorScheme.categories[category]}70`;
+            ctx.arc(x, y, radius, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+        
+        animationFrameId = requestAnimationFrame(() => {
+          updateNodes();
+          drawFractalMatrix();
+        });
+      } catch (error) {
+        console.error("Error in drawFractalMatrix:", error);
+        
+        // Try to recover
+        setTimeout(() => {
+          if (!isPaused) {
+            animationFrameId = requestAnimationFrame(() => {
+              updateNodes();
+              drawFractalMatrix();
+            });
+          }
+        }, 1000);
+      }
+    }
+    
+    function drawRipple() {
+      if (performance.mode === 'minimal') return; // Skip ripples in minimal mode
+      
+      try {
+        const x = Math.random() * width;
+        const y = Math.random() * height;
+        const category = Object.keys(colorScheme.categories)[Math.floor(Math.random() * Object.keys(colorScheme.categories).length)];
+        
+        if (activeCategory !== 'all' && category !== activeCategory) return;
+        
+        const color = colorScheme.categories[category];
+        const maxRadius = Math.min(width, height) * 0.3;
+        let currentRadius = 0;
+        
+        const rippleInterval = setInterval(() => {
+          if (isPaused) return;
+          
+          currentRadius += 5 * speed;
+          
+          ctx.beginPath();
+          ctx.strokeStyle = `${color}${Math.floor((1 - currentRadius / maxRadius) * 80).toString(16).padStart(2, '0')}`;
+          ctx.lineWidth = 1;
+          ctx.arc(x, y, currentRadius, 0, Math.PI * 2);
+          ctx.stroke();
+          
+          if (currentRadius > maxRadius) {
+            clearInterval(rippleInterval);
+          }
+        }, 40);
+      } catch (error) {
+        console.error("Error in drawRipple:", error);
+      }
+    }
+    
+    // Quote display functions
+    function rotateQuote() {
+      if (isPaused) return;
+      
+      try {
+        const quotesForCategory = categoryQuotes[activeCategory];
+        
+        if (!quotesForCategory || quotesForCategory.length === 0) {
+          console.log("No quotes available for category:", activeCategory);
+          return;
+        }
+        
+        // Get a random quote from the active category
+        const randomIndex = Math.floor(Math.random() * quotesForCategory.length);
+        const nextQuote = quotesForCategory[randomIndex];
+        
+        currentQuote = nextQuote;
+        
+        // Update the quote display
+        quoteTextEl.textContent = `"${nextQuote.text}"`;
+        quoteTextEl.style.color = colorScheme.categories[nextQuote.category];
+        quoteCategoryEl.textContent = nextQuote.category.toUpperCase();
+        
+        // Animate the quote display
+        quoteDisplayEl.style.opacity = 0;
+        quoteDisplayEl.style.transform = 'translate(-50%, -47%)';
+        
+        setTimeout(() => {
+          quoteDisplayEl.style.opacity = 1;
+          quoteDisplayEl.style.transform = 'translate(-50%, -50%)';
+        }, 500);
+        
+        // Trigger a ripple effect from a random position
+        if (!isPaused && Math.random() < 0.7) { // Reduce ripple frequency
+          drawRipple();
+        }
+      } catch (error) {
+        console.error("Error rotating quote:", error);
+      }
+    }
+    
+    // Stats display functions
+    function updateStats() {
+      updateLoadingStatus("Updating statistics...");
+      
+      try {
+        // Calculate the total
+        const total = Object.values(termCounts).reduce((sum, count) => sum + count, 0) || 1;
+        
+        // Clear the stats content
+        statsContentEl.innerHTML = '';
+        
+        // Create stat items for each category
+        Object.entries(termCounts).forEach(([category, count]) => {
+          const percentage = (count / total * 100).toFixed(1);
+          
+          const statItem = document.createElement('div');
+          statItem.className = 'stat-item';
+          
+          const statLabel = document.createElement('div');
+          statLabel.className = 'stat-label';
+          statLabel.textContent = `${category.charAt(0).toUpperCase() + category.slice(1)}:`;
+          
+          const statValue = document.createElement('div');
+          statValue.className = 'stat-value';
+          statValue.textContent = `${percentage}%`;
+          
+          const statBarContainer = document.createElement('div');
+          statBarContainer.className = 'stat-bar-container';
+          
+          const statBar = document.createElement('div');
+          statBar.className = 'stat-bar';
+          statBar.style.width = `${percentage}%`;
+          statBar.style.backgroundColor = colorScheme.categories[category];
+          statBar.style.color = colorScheme.categories[category];
+          
+          statBarContainer.appendChild(statBar);
+          statItem.appendChild(statLabel);
+          statItem.appendChild(statValue);
+          statsContentEl.appendChild(statItem);
+          statsContentEl.appendChild(statBarContainer);
+        });
+      } catch (error) {
+        console.error("Error updating stats:", error);
+      }
+    }
+    
+    // Helper functions
+    function updateLoadingStatus(message) {
+      loadingStatusEl.textContent = message;
+      console.log("Loading status:", message);
+    }
+    
+    // Event handlers
+    function handlePauseBtn() {
+      isPaused = !isPaused;
+      pauseBtn.textContent = isPaused ? 'Resume' : 'Pause';
+      
+      if (isPaused) {
+        clearInterval(quoteTimer);
+      } else {
+        rotateQuote();
+        quoteTimer = setInterval(rotateQuote, 8000);
+      }
+    }
+    
+    function handleCategoryFilter(category) {
+      try {
+        // Reset active state of all buttons
+        Object.values(filterButtons).forEach(btn => {
+          btn.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
+        });
+        
+        // Set active state for current button
+        filterButtons[category].style.backgroundColor = category !== 'all' ? 
+          colorScheme.categories[category] + '40' : 
+          'rgba(255, 255, 255, 0.3)';
+        
+        // Update active category
+        activeCategory = category;
+        
+        // Update quotes immediately
+        rotateQuote();
+      } catch (error) {
+        console.error("Error handling category filter:", error);
+      }
+    }
+    
+    function handleComplexityChange() {
+      try {
+        complexity = parseFloat(complexitySlider.value);
+        console.log(`Complexity changed to ${complexity}`);
+        createNodes();
+      } catch (error) {
+        console.error("Error handling complexity change:", error);
+      }
+    }
+    
+    function handleSpeedChange() {
+      try {
+        speed = parseFloat(speedSlider.value);
+        console.log(`Speed changed to ${speed}`);
+      } catch (error) {
+        console.error("Error handling speed change:", error);
+      }
+    }
+    
+    function handlePerformanceToggle() {
+      try {
+        performance.toggle();
+        console.log(`Performance mode: ${performance.mode}`);
+      } catch (error) {
+        console.error("Error toggling performance mode:", error);
+      }
+    }
+    
+    function handleResize() {
+      try {
+        // Update canvas dimensions
+        width = window.innerWidth;
+        height = window.innerHeight;
+        canvas.width = width;
+        canvas.height = height;
+        
+        // Reposition nodes
+        nodes.forEach(node => {
+          if (node.x > width) node.x = width * Math.random();
+          if (node.y > height) node.y = height * Math.random();
+        });
+        
+        console.log(`Canvas resized to ${width}x${height}`);
+      } catch (error) {
+        console.error("Error handling resize:", error);
+      }
+    }
+    
+    // Initialize and start the app
+    async function init() {
+      try {
+        updateLoadingStatus("Starting initialization...");
+        
+        // Try to load the text data
+        let loadedData = false;
+        
+        try {
+          updateLoadingStatus("Loading text data from file...");
+          const response = await fetch('inputrawtext.txt');
+          const text = await response.text();
+          textData = text.split('\n').filter(line => line.trim() !== '');
+          loadedData = true;
+          console.log(`Loaded ${textData.length} lines of text data`);
+        } catch (error) {
+          console.error("Error loading text file:", error);
+          // Use sample data as fallback
+          textData = sampleData;
+          console.log("Using sample data as fallback");
+        }
+        
+        // Analyze the text and categorize quotes
+        termCounts = analyzeText(textData);
+        categoryQuotes = categorizeQuotes(textData);
+        
+        // Setup canvas and visualization
+        if (!setupCanvas()) {
+          throw new Error("Failed to set up canvas");
+        }
+        
+        // Initialize stats
+        updateStats();
+        
+        // Add event listeners
+        updateLoadingStatus("Setting up event listeners...");
+        
+        pauseBtn.addEventListener('click', handlePauseBtn);
+        complexitySlider.addEventListener('input', handleComplexityChange);
+        speedSlider.addEventListener('input', handleSpeedChange);
+        performanceToggle.addEventListener('click', handlePerformanceToggle);
+        
+        window.addEventListener('resize', handleResize);
+        
+        Object.entries(filterButtons).forEach(([category, button]) => {
+          button.addEventListener('click', () => handleCategoryFilter(category));
+        });
+        
+        // Set active state for 'all' button by default
+        filterButtons.all.style.backgroundColor = 'rgba(255, 255, 255, 0.3)';
+        
+        // Start the animation
+        updateLoadingStatus("Starting visualization...");
+        
+        setTimeout(() => {
+          // Hide loading screen
+          loadingEl.style.display = 'none';
+          quoteDisplayEl.style.opacity = 1;
+          
+          // Start quote rotation timer
+          rotateQuote();
+          quoteTimer = setInterval(rotateQuote, 8000);
+          
+          // Start drawing
+          drawFractalMatrix();
+          
+          isInitialized = true;
+          console.log("Initialization complete!");
+        }, 1000);
+      } catch (error) {
+        console.error("Critical initialization error:", error);
+        loadingStatusEl.textContent = "Error initializing visualization. Please try refreshing the page.";
+        loadingStatusEl.style.color = "#ff6b6b";
+      }
+    }
+    
+    // Clean up on page unload
+    function cleanup() {
+      cancelAnimationFrame(animationFrameId);
+      clearInterval(quoteTimer);
+      
+      if (isInitialized) {
+        pauseBtn.removeEventListener('click', handlePauseBtn);
+        complexitySlider.removeEventListener('input', handleComplexityChange);
+        speedSlider.removeEventListener('input', handleSpeedChange);
+        performanceToggle.removeEventListener('click', handlePerformanceToggle);
+        window.removeEventListener('resize', handleResize);
+        
+        Object.values(filterButtons).forEach(button => {
+          button.removeEventListener('click', handleCategoryFilter);
+        });
+      }
+    }
+    
+    // Start the app
+    init();
+    window.addEventListener('beforeunload', cleanup);
+  </script>
+</body>
+</html>
